@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/mesameen/iot-web-api/src/config"
 	"github.com/mesameen/iot-web-api/src/lib/controller"
@@ -35,17 +36,23 @@ func main() {
 	telem.Infof(ctx, "telemetry initialized")
 
 	router := gin.Default()
-	apiRouter := router.Group(config.Config.Common.APIRouteGroup)
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}))
 	router.Use(telem.LogRequest())
 	router.Use(telem.MeterRequestDuration())
 	router.Use(telem.MeterRequestsInFlight())
+	apiRouter := router.Group(config.Config.Common.APIRouteGroup)
 
 	db, err := database.New(ctx, telem)
 	if err != nil {
 		telem.Fatalf(ctx, "Failed to connect to database. Error: %v", err)
 	}
 	defer db.Close(ctx)
-	ctrl := controller.New(telem, &db)
+	ctrl := controller.New(telem, db)
 	telematicsHandler := telematics.NewHandler(telem, ctrl)
 	telematics.RegisterRoutes(apiRouter.Group("/telematics"), telematicsHandler)
 	deviceHandler := device.NewHandler(telem, ctrl)

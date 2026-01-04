@@ -12,9 +12,7 @@ import (
 // LogRequest is a gin middleware that logs the request path
 func (s *Service) LogRequest() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		s.Infof(ctx.Request.Context(), "request to: %s", ctx.Request.URL.Path)
 		ctx.Next()
-		s.Infof(ctx.Request.Context(), "end of request to: %s", ctx.Request.URL.Path)
 	}
 }
 

@@ -25,7 +25,8 @@ type ServerConfig struct {
 }
 
 type PostgresConfig struct {
-	Address string `toml:"address"`
+	Address             string `toml:"address"`
+	TelematicsDataTable string `toml:"telematics_data_table"`
 }
 
 type LogConfig struct {

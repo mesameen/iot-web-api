@@ -1,0 +1,162 @@
+[
+  {
+    "imei": "860123045678901",
+    "device_datatime": 1735718400,
+    "latitude": 17.385044,
+    "longitude": 78.486671,
+    "speed": 0,
+    "ignition": false
+  },
+  {
+    "imei": "860123045678901",
+    "device_datatime": 1735718520,
+    "latitude": 17.38512,
+    "longitude": 78.4867,
+    "speed": 14,
+    "ignition": true
+  },
+  {
+    "imei": "860123045678901",
+    "device_datatime": 1735718640,
+    "latitude": 17.3853,
+    "longitude": 78.4869,
+    "speed": 32,
+    "ignition": true
+  },
+  {
+    "imei": "860123045678902",
+    "device_datatime": 1735718430,
+    "latitude": 12.971599,
+    "longitude": 77.594566,
+    "speed": 0,
+    "ignition": false
+  },
+  {
+    "imei": "860123045678902",
+    "device_datatime": 1735718580,
+    "latitude": 12.9718,
+    "longitude": 77.5949,
+    "speed": 18,
+    "ignition": true
+  },
+  {
+    "imei": "860123045678902",
+    "device_datatime": 1735718700,
+    "latitude": 12.9721,
+    "longitude": 77.5952,
+    "speed": 36,
+    "ignition": true
+  },
+  {
+    "imei": "860123045678903",
+    "device_datatime": 1735718460,
+    "latitude": 19.07609,
+    "longitude": 72.877426,
+    "speed": 6,
+    "ignition": true
+  },
+  {
+    "imei": "860123045678903",
+    "device_datatime": 1735718580,
+    "latitude": 19.0764,
+    "longitude": 72.8778,
+    "speed": 22,
+    "ignition": true
+  },
+  {
+    "imei": "860123045678903",
+    "device_datatime": 1735718760,
+    "latitude": 19.0769,
+    "longitude": 72.8783,
+    "speed": 41,
+    "ignition": true
+  },
+  {
+    "imei": "860123045678904",
+    "device_datatime": 1735718410,
+    "latitude": 28.613939,
+    "longitude": 77.209023,
+    "speed": 0,
+    "ignition": false
+  },
+  {
+    "imei": "860123045678904",
+    "device_datatime": 1735718530,
+    "latitude": 28.6141,
+    "longitude": 77.2094,
+    "speed": 15,
+    "ignition": true
+  },
+  {
+    "imei": "860123045678904",
+    "device_datatime": 1735718710,
+    "latitude": 28.6146,
+    "longitude": 77.21,
+    "speed": 33,
+    "ignition": true
+  },
+  {
+    "imei": "860123045678905",
+    "device_datatime": 1735718480,
+    "latitude": 13.08268,
+    "longitude": 80.270718,
+    "speed": 0,
+    "ignition": false
+  },
+  {
+    "imei": "860123045678905",
+    "device_datatime": 1735718600,
+    "latitude": 13.0829,
+    "longitude": 80.2711,
+    "speed": 19,
+    "ignition": true
+  },
+  {
+    "imei": "860123045678905",
+    "device_datatime": 1735718780,
+    "latitude": 13.0833,
+    "longitude": 80.2717,
+    "speed": 37,
+    "ignition": true
+  },
+  {
+    "imei": "860123045678906",
+    "device_datatime": 1735718560,
+    "latitude": 22.572645,
+    "longitude": 88.363892,
+    "speed": 11,
+    "ignition": true
+  },
+  {
+    "imei": "860123045678906",
+    "device_datatime": 1735718680,
+    "latitude": 22.573,
+    "longitude": 88.3643,
+    "speed": 27,
+    "ignition": true
+  },
+  {
+    "imei": "860123045678906",
+    "device_datatime": 1735718860,
+    "latitude": 22.5735,
+    "longitude": 88.3649,
+    "speed": 43,
+    "ignition": true
+  },
+  {
+    "imei": "860123045678907",
+    "device_datatime": 1735718700,
+    "latitude": 26.912434,
+    "longitude": 75.787271,
+    "speed": 0,
+    "ignition": false
+  },
+  {
+    "imei": "860123045678907",
+    "device_datatime": 1735718820,
+    "latitude": 26.9128,
+    "longitude": 75.7877,
+    "speed": 17,
+    "ignition": true
+  }
+]

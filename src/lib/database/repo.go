@@ -5,10 +5,12 @@ import (
 	"errors"
 
 	"github.com/mesameen/iot-web-api/src/config"
+	"github.com/mesameen/iot-web-api/src/model"
 	"github.com/mesameen/iot-web-api/src/telemetryservice"
 )
 
 type Repo interface {
+	GetTelematicsData(ctx context.Context) ([]*model.TelematicsData, error)
 	Close(ctx context.Context) error
 }
 
