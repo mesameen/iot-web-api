@@ -25,8 +25,11 @@ type ServerConfig struct {
 }
 
 type PostgresConfig struct {
-	Address             string `toml:"address"`
-	TelematicsDataTable string `toml:"telematics_data_table"`
+	Address                 string `toml:"address"`
+	TelematicsDataTable     string `toml:"telematics_data_table"`
+	ConnectionSnapshotTable string `toml:"connection_snapshot_table"`
+	RegisteredDevicesTable  string `toml:"registered_devices_table"`
+	CommandsTable           string `toml:"commands_table"`
 }
 
 type LogConfig struct {
@@ -44,6 +47,8 @@ func InitConfig() error {
 	if _, err := toml.DecodeFile("config.toml", &Config); err != nil {
 		log.Panicf("Failed to load config %v\n", err)
 	}
-	log.Printf("Config: %+v\n", Config)
+	log.Printf("ServerConfig: %+v\n", Config.Server)
+	log.Printf("Common Config: %+v\n", Config.Common)
+	log.Printf("Postgres Config: %+v\n", Config.Postgres)
 	return nil
 }

@@ -16,7 +16,7 @@ import (
 	"github.com/mesameen/iot-web-api/src/lib/database"
 	"github.com/mesameen/iot-web-api/src/lib/service/commands"
 	"github.com/mesameen/iot-web-api/src/lib/service/connections"
-	"github.com/mesameen/iot-web-api/src/lib/service/device"
+	"github.com/mesameen/iot-web-api/src/lib/service/devices"
 	"github.com/mesameen/iot-web-api/src/lib/service/telematics"
 	"github.com/mesameen/iot-web-api/src/telemetryservice"
 )
@@ -55,8 +55,8 @@ func main() {
 	ctrl := controller.New(telem, db)
 	telematicsHandler := telematics.NewHandler(telem, ctrl)
 	telematics.RegisterRoutes(apiRouter.Group("/telematics"), telematicsHandler)
-	deviceHandler := device.NewHandler(telem, ctrl)
-	device.RegisterRoutes(apiRouter.Group("/device"), deviceHandler)
+	deviceHandler := devices.NewHandler(telem, ctrl)
+	devices.RegisterRoutes(apiRouter.Group("/devices"), deviceHandler)
 	connectionsHandler := connections.NewHandler(telem, ctrl)
 	connections.RegisterRoutes(apiRouter.Group("/connections"), connectionsHandler)
 	commandsHandler := commands.NewHandler(telem, ctrl)

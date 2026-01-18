@@ -1,14 +1,5 @@
 package model
 
-// type TelematicsData struct {
-// 	Imei           string  `json:"imei"`
-// 	DeviceDatetime uint64  `json:"device_datetime"`
-// 	Latitude       float64 `json:"latitude"`
-// 	Longitude      float64 `json:"longitude"`
-// 	Speed          int32   `json:"speed"`
-// 	Ignition       bool    `json:"ignition"`
-// }
-
 type TelematicsData struct {
 	Imei             string       `json:"imei"`
 	GpsData          *GpsData     `json:"gps_data"`

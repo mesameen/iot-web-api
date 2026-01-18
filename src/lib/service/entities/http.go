@@ -1,4 +1,4 @@
-package commands
+package entities
 
 import (
 	"net/http"
@@ -20,15 +20,15 @@ func NewHandler(telem telemetryservice.Repo, ctrl *controller.Controller) *Handl
 	}
 }
 
-func (h *Handler) getCommands(c *gin.Context) {
-	ctx, span := h.telem.TraceStart(c.Request.Context(), "get_comamnds")
+func (h *Handler) getentities(c *gin.Context) {
+	ctx, span := h.telem.TraceStart(c.Request.Context(), "get_entities_data")
 	defer span.End()
-	records, err := h.ctrl.GetConnectionsData(ctx)
+	records, err := h.ctrl.GetEntitiesData(ctx)
 	if err != nil {
-		h.telem.Errorf(c.Request.Context(), "Failed to get telematics data. Error: %v", err)
+		h.telem.Errorf(c.Request.Context(), "Failed to get entities data. Error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
-	h.telem.Infof(ctx, "No of telamatics data returned: %d", len(records))
+	h.telem.Infof(ctx, "No of entites data returned: %d", len(records))
 	c.JSON(http.StatusOK, records)
 }

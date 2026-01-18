@@ -1,7 +1,7 @@
-package connections
+package devices
 
 import "github.com/gin-gonic/gin"
 
 func RegisterRoutes(r *gin.RouterGroup, h *Handler) {
-	r.POST("/getconnectionsdata", h.getConnections)
+	r.POST("/getdevices", h.getDevices)
 }

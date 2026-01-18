@@ -1,4 +1,4 @@
-package commands
+package devices
 
 import (
 	"net/http"
@@ -20,15 +20,15 @@ func NewHandler(telem telemetryservice.Repo, ctrl *controller.Controller) *Handl
 	}
 }
 
-func (h *Handler) getCommands(c *gin.Context) {
-	ctx, span := h.telem.TraceStart(c.Request.Context(), "get_comamnds")
+func (h *Handler) getDevices(c *gin.Context) {
+	ctx, span := h.telem.TraceStart(c.Request.Context(), "get_registered_devices")
 	defer span.End()
-	records, err := h.ctrl.GetConnectionsData(ctx)
+	records, err := h.ctrl.GetRegisteredDevices(ctx)
 	if err != nil {
 		h.telem.Errorf(c.Request.Context(), "Failed to get telematics data. Error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
-	h.telem.Infof(ctx, "No of telamatics data returned: %d", len(records))
+	h.telem.Infof(ctx, "No of devices returned: %d", len(records))
 	c.JSON(http.StatusOK, records)
 }
