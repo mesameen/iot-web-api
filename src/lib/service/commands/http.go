@@ -23,7 +23,7 @@ func NewHandler(telem telemetryservice.Repo, ctrl *controller.Controller) *Handl
 func (h *Handler) getCommands(c *gin.Context) {
 	ctx, span := h.telem.TraceStart(c.Request.Context(), "get_comamnds")
 	defer span.End()
-	records, err := h.ctrl.GetConnectionsData(ctx)
+	records, err := h.ctrl.GetCommands(ctx)
 	if err != nil {
 		h.telem.Errorf(c.Request.Context(), "Failed to get telematics data. Error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
