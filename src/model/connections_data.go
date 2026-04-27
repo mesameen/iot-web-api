@@ -6,7 +6,7 @@ type ConnectionsData struct {
 	TenantID       string `json:"tenant_id"`
 	ConnectedAt    int64  `json:"connected_at_ms"`
 	DisconnectedAt int64  `json:"disconnected_at_ms"`
-	Duration       int32  `json:"duration"`
+	DurationMS     int32  `json:"duration_ms"`
 	Addr           string `json:"addr"`
 	ListenerName   string `json:"listener_name"`
 	Reason         string `json:"reason"`

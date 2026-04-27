@@ -20,12 +20,25 @@ func NewHandler(telem telemetryservice.Repo, ctrl *controller.Controller) *Handl
 	}
 }
 
-func (h *Handler) gettelematicsdata(c *gin.Context) {
+func (h *Handler) getTelematicsData(c *gin.Context) {
 	ctx, span := h.telem.TraceStart(c.Request.Context(), "get_telematics_data")
 	defer span.End()
 	records, err := h.ctrl.GetTelematicsData(ctx)
 	if err != nil {
 		h.telem.Errorf(c.Request.Context(), "Failed to get telematics data. Error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+	h.telem.Infof(ctx, "No of telamatics data returned: %d", len(records))
+	c.JSON(http.StatusOK, records)
+}
+
+func (h *Handler) getRecentTelematicsData(c *gin.Context) {
+	ctx, span := h.telem.TraceStart(c.Request.Context(), "get_recent_telematics_data")
+	defer span.End()
+	records, err := h.ctrl.GetRecentTelematicsData(ctx)
+	if err != nil {
+		h.telem.Errorf(c.Request.Context(), "Failed to get recent telematics data. Error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}

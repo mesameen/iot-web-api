@@ -28,8 +28,24 @@ func (c *Controller) GetTelematicsData(ctx context.Context) ([]*model.Telematics
 	return telematcsRecords, nil
 }
 
+func (c *Controller) GetRecentTelematicsData(ctx context.Context) ([]*model.TelematicsData, error) {
+	telematcsRecords, err := c.db.GetRecentTelematicsData(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return telematcsRecords, nil
+}
+
 func (c *Controller) GetConnectionsData(ctx context.Context) ([]*model.ConnectionsData, error) {
-	records, err := c.db.GetConnectionSnapshotsData(ctx)
+	records, err := c.db.GetConnectionEvents(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return records, nil
+}
+
+func (c *Controller) GetRecentConnectionsData(ctx context.Context) ([]*model.ConnectionsData, error) {
+	records, err := c.db.GetRecentConnectionEvents(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +53,7 @@ func (c *Controller) GetConnectionsData(ctx context.Context) ([]*model.Connectio
 }
 
 func (c *Controller) GetRegisteredDevices(ctx context.Context) ([]*model.RegisteredDevice, error) {
-	records, err := c.db.GetRegistereddevices(ctx)
+	records, err := c.db.GetRegisteredDevices(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +61,7 @@ func (c *Controller) GetRegisteredDevices(ctx context.Context) ([]*model.Registe
 }
 
 func (c *Controller) GetEntitiesData(ctx context.Context) ([]*model.ConnectionsData, error) {
-	records, err := c.db.GetConnectionSnapshotsData(ctx)
+	records, err := c.db.GetRecentConnectionEvents(ctx)
 	if err != nil {
 		return nil, err
 	}

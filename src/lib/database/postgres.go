@@ -40,7 +40,6 @@ func (p *Postgres) GetTelematicsData(ctx context.Context) ([]*model.TelematicsDa
 							imei,
 							device_date_time,
 							listener_date_time,
-							insert_date_time,
 							gps_data,
 							sensor_data,
 							network_data
@@ -57,7 +56,6 @@ func (p *Postgres) GetTelematicsData(ctx context.Context) ([]*model.TelematicsDa
 		var imei string
 		var deviceDateTime time.Time
 		var listenerDateTime time.Time
-		var insertDateTime time.Time
 		var gpsDataStr string
 		var sensorDataStr string
 		var networkDataStr string
@@ -65,7 +63,6 @@ func (p *Postgres) GetTelematicsData(ctx context.Context) ([]*model.TelematicsDa
 			&imei,
 			&deviceDateTime,
 			&listenerDateTime,
-			&insertDateTime,
 			&gpsDataStr,
 			&sensorDataStr,
 			&networkDataStr,
@@ -89,7 +86,6 @@ func (p *Postgres) GetTelematicsData(ctx context.Context) ([]*model.TelematicsDa
 			Imei:             imei,
 			ListenerDatetime: uint64(listenerDateTime.UnixMilli()),
 			DeviceDatetime:   uint64(deviceDateTime.UnixMilli()),
-			InsertDatetime:   uint64(listenerDateTime.UnixMilli()),
 			GpsData:          &gpsData,
 			SensorData:       &sensorData,
 			NetworkData:      &networkData,
@@ -99,41 +95,158 @@ func (p *Postgres) GetTelematicsData(ctx context.Context) ([]*model.TelematicsDa
 	return records, nil
 }
 
-func (p *Postgres) GetConnectionSnapshotsData(ctx context.Context) ([]*model.ConnectionsData, error) {
+func (p *Postgres) GetRecentTelematicsData(ctx context.Context) ([]*model.TelematicsData, error) {
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	query := fmt.Sprintf(`select 
+							imei,
+							device_date_time,
+							listener_date_time,
+							gps_data,
+							sensor_data,
+							network_data
+							from %s ORDER BY updated_at DESC LIMIT 25`,
+		config.Config.Postgres.RecentTelematicsDataTable)
+	rows, err := p.conn.Query(ctxWithTimeout, query)
+	if err != nil {
+		p.telem.Errorf(ctx, "Failed to retrieve recent telematics rows. Error: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+	records := make([]*model.TelematicsData, 0)
+	for rows.Next() {
+		var imei string
+		var deviceDateTime time.Time
+		var listenerDateTime time.Time
+		var gpsDataStr string
+		var sensorDataStr string
+		var networkDataStr string
+		if err := rows.Scan(
+			&imei,
+			&deviceDateTime,
+			&listenerDateTime,
+			&gpsDataStr,
+			&sensorDataStr,
+			&networkDataStr,
+		); err != nil {
+			p.telem.Errorf(ctx, "Failed to scan telematics row. Error: %v", err)
+			continue
+		}
+		var gpsData model.GpsData
+		var sensorData model.SensorData
+		var networkData model.NetworkData
+		if err := json.Unmarshal([]byte(gpsDataStr), &gpsData); err != nil {
+			p.telem.Errorf(ctx, "Failed to unmarshal gps data fetched from db. Error: %v", err)
+		}
+		if err := json.Unmarshal([]byte(sensorDataStr), &sensorData); err != nil {
+			p.telem.Errorf(ctx, "Failed to unmarshal sensor data fetched from db. Error: %v", err)
+		}
+		if err := json.Unmarshal([]byte(networkDataStr), &networkData); err != nil {
+			p.telem.Errorf(ctx, "Failed to unmarshal network data fetched from db. Error: %v", err)
+		}
+		record := model.TelematicsData{
+			Imei:             imei,
+			ListenerDatetime: uint64(listenerDateTime.UnixMilli()),
+			DeviceDatetime:   uint64(deviceDateTime.UnixMilli()),
+			GpsData:          &gpsData,
+			SensorData:       &sensorData,
+			NetworkData:      &networkData,
+		}
+		records = append(records, &record)
+	}
+	return records, nil
+}
+
+func (p *Postgres) GetConnectionEvents(ctx context.Context) ([]*model.ConnectionsData, error) {
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	query := fmt.Sprintf(`select 
 			imei, 
-			connected_at_ms, 
-			disconnected_at_ms, 
-			duration, 
-			reason, 
+			connected_at, 
+			disconnected_at, 
+			duration_ms, 
+			reason,
 			sent, 
 			recv, 
 			action 
-		from %s ORDER BY id DESC LIMIT 25`,
-		config.Config.Postgres.ConnectionSnapshotTable)
+		from %s ORDER BY updated_at DESC LIMIT 25`,
+		config.Config.Postgres.ConnectionEventsTable)
 	rows, err := p.conn.Query(ctxWithTimeout, query)
 	if err != nil {
-		p.telem.Errorf(ctx, "Failed to retrieve telematics rows. Error: %v", err)
+		p.telem.Errorf(ctx, "Failed to retrieve connection events. Error: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
 	records := make([]*model.ConnectionsData, 0)
 	for rows.Next() {
 		var record model.ConnectionsData
+		var connectedAt time.Time
+		var disconnectedAt *time.Time
+
 		if err := rows.Scan(
 			&record.Imei,
-			&record.ConnectedAt,
-			&record.DisconnectedAt,
-			&record.Duration,
+			&connectedAt,
+			&disconnectedAt,
+			&record.DurationMS,
 			&record.Reason,
 			&record.Sent,
 			&record.Recv,
 			&record.Action,
 		); err != nil {
-			p.telem.Errorf(ctx, "Failed to scan telematics row. Error: %v", err)
+			p.telem.Errorf(ctx, "Failed to scan connection events row. Error: %v", err)
 			continue
+		}
+		record.ConnectedAt = connectedAt.UnixMilli()
+		if disconnectedAt != nil {
+			record.DisconnectedAt = disconnectedAt.UnixMilli()
+		}
+		records = append(records, &record)
+	}
+	return records, nil
+}
+
+func (p *Postgres) GetRecentConnectionEvents(ctx context.Context) ([]*model.ConnectionsData, error) {
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	query := fmt.Sprintf(`select 
+			imei, 
+			connected_at, 
+			disconnected_at, 
+			duration_ms, 
+			reason,
+			sent, 
+			recv, 
+			action 
+		from %s ORDER BY updated_at DESC LIMIT 25`,
+		config.Config.Postgres.RecentConnectionEventsTable)
+	rows, err := p.conn.Query(ctxWithTimeout, query)
+	if err != nil {
+		p.telem.Errorf(ctx, "Failed to retrieve recent connection events. Error: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+	records := make([]*model.ConnectionsData, 0)
+	for rows.Next() {
+		var record model.ConnectionsData
+		var connectedAt time.Time
+		var disconnectedAt *time.Time
+
+		if err := rows.Scan(
+			&record.Imei,
+			&connectedAt,
+			&disconnectedAt,
+			&record.DurationMS,
+			&record.Reason,
+			&record.Sent,
+			&record.Recv,
+			&record.Action,
+		); err != nil {
+			p.telem.Errorf(ctx, "Failed to scan recent connection events row. Error: %v", err)
+			continue
+		}
+		record.ConnectedAt = connectedAt.UnixMilli()
+		if disconnectedAt != nil {
+			record.DisconnectedAt = disconnectedAt.UnixMilli()
 		}
 		records = append(records, &record)
 	}
@@ -144,16 +257,15 @@ func (p *Postgres) GetEntities(ctx context.Context) ([]*model.ConnectionsData, e
 	return nil, nil
 }
 
-func (p *Postgres) GetRegistereddevices(ctx context.Context) ([]*model.RegisteredDevice, error) {
+func (p *Postgres) GetRegisteredDevices(ctx context.Context) ([]*model.RegisteredDevice, error) {
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	query := fmt.Sprintf(`select 
 			imei, 
-			tenant_group_id, 
 			tenant_id, 
 			parser_id, 
 			status
-		from %s ORDER BY id DESC LIMIT 25`,
+		from %s LIMIT 25`,
 		config.Config.Postgres.RegisteredDevicesTable)
 	rows, err := p.conn.Query(ctxWithTimeout, query)
 	if err != nil {
@@ -166,7 +278,6 @@ func (p *Postgres) GetRegistereddevices(ctx context.Context) ([]*model.Registere
 		var record model.RegisteredDevice
 		if err := rows.Scan(
 			&record.Imei,
-			&record.TenantGroupID,
 			&record.TenantID,
 			&record.ParserID,
 			&record.Status,

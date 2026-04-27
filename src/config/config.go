@@ -25,11 +25,13 @@ type ServerConfig struct {
 }
 
 type PostgresConfig struct {
-	Address                 string `toml:"address"`
-	TelematicsDataTable     string `toml:"telematics_data_table"`
-	ConnectionSnapshotTable string `toml:"connection_snapshot_table"`
-	RegisteredDevicesTable  string `toml:"registered_devices_table"`
-	CommandsTable           string `toml:"commands_table"`
+	Address                     string `toml:"address"`
+	TelematicsDataTable         string `toml:"telematicsdata_table"`
+	RecentTelematicsDataTable   string `toml:"recent_telematicsdata_table"`
+	ConnectionEventsTable       string `toml:"connection_events_table"`
+	RecentConnectionEventsTable string `toml:"recent_connection_events_table"`
+	RegisteredDevicesTable      string `toml:"registered_devices_table"`
+	CommandsTable               string `toml:"commands_table"`
 }
 
 type LogConfig struct {
