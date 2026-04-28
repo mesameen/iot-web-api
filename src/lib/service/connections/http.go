@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mesameen/iot-web-api/src/lib/controller"
+	"github.com/mesameen/iot-web-api/src/model"
 	"github.com/mesameen/iot-web-api/src/telemetryservice"
 )
 
@@ -23,9 +24,16 @@ func NewHandler(telem telemetryservice.Repo, ctrl *controller.Controller) *Handl
 func (h *Handler) getConnections(c *gin.Context) {
 	ctx, span := h.telem.TraceStart(c.Request.Context(), "get_connections_data")
 	defer span.End()
-	records, err := h.ctrl.GetConnectionsData(ctx)
+	var req model.GetConnectionsDataRequest
+	if err := c.BindJSON(&req); err != nil {
+		h.telem.Errorf(c.Request.Context(), "Failed to decode get connections request data. Error: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+
+	records, err := h.ctrl.GetConnectionsData(ctx, &req)
 	if err != nil {
-		h.telem.Errorf(c.Request.Context(), "Failed to get telematics data. Error: %v", err)
+		h.telem.Errorf(c.Request.Context(), "Failed to get connections data. Error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
@@ -36,9 +44,15 @@ func (h *Handler) getConnections(c *gin.Context) {
 func (h *Handler) getRecentConnections(c *gin.Context) {
 	ctx, span := h.telem.TraceStart(c.Request.Context(), "get_recent_connections_data")
 	defer span.End()
-	records, err := h.ctrl.GetRecentConnectionsData(ctx)
+	var req model.GetConnectionsDataRequest
+	if err := c.BindJSON(&req); err != nil {
+		h.telem.Errorf(c.Request.Context(), "Failed to decode get recent connections request data. Error: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+	records, err := h.ctrl.GetRecentConnectionsData(ctx, &req)
 	if err != nil {
-		h.telem.Errorf(c.Request.Context(), "Failed to get recent telematics data. Error: %v", err)
+		h.telem.Errorf(c.Request.Context(), "Failed to get recent connections data. Error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}

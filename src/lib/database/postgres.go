@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -33,9 +34,34 @@ func connectPostgres(ctx context.Context, telem *telemetryservice.Service) (*Pos
 	}, nil
 }
 
-func (p *Postgres) GetTelematicsData(ctx context.Context) ([]*model.TelematicsData, error) {
+func (p *Postgres) GetTelematicsData(ctx context.Context, req *model.GetTelematicsDataRequest) ([]*model.TelematicsData, error) {
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
+	// Dynamic where condition
+	args := []any{}
+	conditions := []string{}
+	argIdx := 1
+	if req.IMEI != "" {
+		conditions = append(conditions, fmt.Sprintf("imei = $%d", argIdx))
+		args = append(args, req.IMEI)
+		argIdx++
+	}
+	if req.From > 0 {
+		conditions = append(conditions, fmt.Sprintf("device_date_time >= to_timestamp($%d::bigint / 1000.0)", argIdx))
+		args = append(args, req.From)
+		argIdx++
+	}
+	if req.To > 0 {
+		conditions = append(conditions, fmt.Sprintf("device_date_time <= to_timestamp($%d::bigint / 1000.0)", argIdx))
+		args = append(args, req.To)
+		argIdx++
+	}
+
+	where := ""
+	if len(conditions) > 0 {
+		where = "WHERE " + strings.Join(conditions, " AND ")
+	}
+
 	query := fmt.Sprintf(`select 
 							imei,
 							device_date_time,
@@ -43,9 +69,9 @@ func (p *Postgres) GetTelematicsData(ctx context.Context) ([]*model.TelematicsDa
 							gps_data,
 							sensor_data,
 							network_data
-							from %s ORDER BY id DESC LIMIT 25`,
-		config.Config.Postgres.TelematicsDataTable)
-	rows, err := p.conn.Query(ctxWithTimeout, query)
+							from %s %s ORDER BY id DESC LIMIT 25`,
+		config.Config.Postgres.TelematicsDataTable, where)
+	rows, err := p.conn.Query(ctxWithTimeout, query, args...)
 	if err != nil {
 		p.telem.Errorf(ctx, "Failed to retrieve telematics rows. Error: %v", err)
 		return nil, err
@@ -95,9 +121,21 @@ func (p *Postgres) GetTelematicsData(ctx context.Context) ([]*model.TelematicsDa
 	return records, nil
 }
 
-func (p *Postgres) GetRecentTelematicsData(ctx context.Context) ([]*model.TelematicsData, error) {
+func (p *Postgres) GetRecentTelematicsData(ctx context.Context, req *model.GetTelematicsDataRequest) ([]*model.TelematicsData, error) {
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
+	args := []any{}
+	conditions := []string{}
+	argIdx := 1
+	if req.IMEI != "" {
+		args = append(args, req.IMEI)
+		conditions = append(conditions, fmt.Sprintf("imei=$%d", argIdx))
+		argIdx++
+	}
+	where := ""
+	if len(conditions) != 0 {
+		where = "where " + strings.Join(conditions, " AND ")
+	}
 	query := fmt.Sprintf(`select 
 							imei,
 							device_date_time,
@@ -105,9 +143,10 @@ func (p *Postgres) GetRecentTelematicsData(ctx context.Context) ([]*model.Telema
 							gps_data,
 							sensor_data,
 							network_data
-							from %s ORDER BY updated_at DESC LIMIT 25`,
-		config.Config.Postgres.RecentTelematicsDataTable)
-	rows, err := p.conn.Query(ctxWithTimeout, query)
+							from %s %s ORDER BY updated_at DESC LIMIT 25`,
+		config.Config.Postgres.RecentTelematicsDataTable, where)
+	p.telem.Infof(ctx, "Query to fetch recent telematics data: %s", strings.Join(strings.Fields(query), " "))
+	rows, err := p.conn.Query(ctxWithTimeout, query, args...)
 	if err != nil {
 		p.telem.Errorf(ctx, "Failed to retrieve recent telematics rows. Error: %v", err)
 		return nil, err
@@ -157,9 +196,33 @@ func (p *Postgres) GetRecentTelematicsData(ctx context.Context) ([]*model.Telema
 	return records, nil
 }
 
-func (p *Postgres) GetConnectionEvents(ctx context.Context) ([]*model.ConnectionsData, error) {
+func (p *Postgres) GetConnectionEvents(ctx context.Context, req *model.GetConnectionsDataRequest) ([]*model.ConnectionsData, error) {
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
+	// Dynamic where condition
+	args := []any{}
+	conditions := []string{}
+	argIdx := 1
+	if req.IMEI != "" {
+		conditions = append(conditions, fmt.Sprintf("imei = $%d", argIdx))
+		args = append(args, req.IMEI)
+		argIdx++
+	}
+	if req.From > 0 {
+		conditions = append(conditions, fmt.Sprintf("connected_at >= to_timestamp($%d::bigint / 1000.0)", argIdx))
+		args = append(args, req.From)
+		argIdx++
+	}
+	if req.To > 0 {
+		conditions = append(conditions, fmt.Sprintf("connected_at <= to_timestamp($%d::bigint / 1000.0)", argIdx))
+		args = append(args, req.To)
+		argIdx++
+	}
+
+	where := ""
+	if len(conditions) > 0 {
+		where = "WHERE " + strings.Join(conditions, " AND ")
+	}
 	query := fmt.Sprintf(`select 
 			imei, 
 			connected_at, 
@@ -169,9 +232,10 @@ func (p *Postgres) GetConnectionEvents(ctx context.Context) ([]*model.Connection
 			sent, 
 			recv, 
 			action 
-		from %s ORDER BY updated_at DESC LIMIT 25`,
-		config.Config.Postgres.ConnectionEventsTable)
-	rows, err := p.conn.Query(ctxWithTimeout, query)
+		from %s %s ORDER BY updated_at DESC LIMIT 25`,
+		config.Config.Postgres.ConnectionEventsTable, where)
+	p.telem.Infof(ctx, "Query to fetch connection events data: %s", strings.Join(strings.Fields(query), " "))
+	rows, err := p.conn.Query(ctxWithTimeout, query, args...)
 	if err != nil {
 		p.telem.Errorf(ctx, "Failed to retrieve connection events. Error: %v", err)
 		return nil, err
@@ -205,9 +269,21 @@ func (p *Postgres) GetConnectionEvents(ctx context.Context) ([]*model.Connection
 	return records, nil
 }
 
-func (p *Postgres) GetRecentConnectionEvents(ctx context.Context) ([]*model.ConnectionsData, error) {
+func (p *Postgres) GetRecentConnectionEvents(ctx context.Context, req *model.GetConnectionsDataRequest) ([]*model.ConnectionsData, error) {
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
+	args := []any{}
+	conditions := []string{}
+	argIdx := 1
+	if req.IMEI != "" {
+		args = append(args, req.IMEI)
+		conditions = append(conditions, fmt.Sprintf("imei=$%d", argIdx))
+		argIdx++
+	}
+	where := ""
+	if len(conditions) != 0 {
+		where = "where " + strings.Join(conditions, " AND ")
+	}
 	query := fmt.Sprintf(`select 
 			imei, 
 			connected_at, 
@@ -217,9 +293,11 @@ func (p *Postgres) GetRecentConnectionEvents(ctx context.Context) ([]*model.Conn
 			sent, 
 			recv, 
 			action 
-		from %s ORDER BY updated_at DESC LIMIT 25`,
-		config.Config.Postgres.RecentConnectionEventsTable)
-	rows, err := p.conn.Query(ctxWithTimeout, query)
+		from %s %s ORDER BY updated_at DESC LIMIT 25`,
+		config.Config.Postgres.RecentConnectionEventsTable, where)
+	p.telem.Infof(ctx, "Query to fetch recent connections data: %s", strings.Join(strings.Fields(query), " "))
+
+	rows, err := p.conn.Query(ctxWithTimeout, query, args...)
 	if err != nil {
 		p.telem.Errorf(ctx, "Failed to retrieve recent connection events. Error: %v", err)
 		return nil, err
@@ -257,17 +335,31 @@ func (p *Postgres) GetEntities(ctx context.Context) ([]*model.ConnectionsData, e
 	return nil, nil
 }
 
-func (p *Postgres) GetRegisteredDevices(ctx context.Context) ([]*model.RegisteredDevice, error) {
+func (p *Postgres) GetRegisteredDevices(ctx context.Context, req *model.GetRegisteredDevicesRequest) ([]*model.RegisteredDevice, error) {
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
+	args := []any{}
+	conditions := []string{}
+	argIdx := 1
+	if req.IMEI != "" {
+		args = append(args, req.IMEI)
+		conditions = append(conditions, fmt.Sprintf("imei=$%d", argIdx))
+		argIdx++
+	}
+	where := ""
+	if len(conditions) != 0 {
+		where = "where " + strings.Join(conditions, " AND ")
+	}
 	query := fmt.Sprintf(`select 
 			imei, 
 			tenant_id, 
 			parser_id, 
 			status
-		from %s LIMIT 25`,
-		config.Config.Postgres.RegisteredDevicesTable)
-	rows, err := p.conn.Query(ctxWithTimeout, query)
+		from %s %s LIMIT 25`,
+		config.Config.Postgres.RegisteredDevicesTable, where)
+	p.telem.Infof(ctx, "Query to fetch registered devices: %s", strings.Join(strings.Fields(query), " "))
+
+	rows, err := p.conn.Query(ctxWithTimeout, query, args...)
 	if err != nil {
 		p.telem.Errorf(ctx, "Failed to retrieve registered devices. Error: %v", err)
 		return nil, err

@@ -20,40 +20,40 @@ func New(telem *telemetryservice.Service, db database.Repo) *Controller {
 	}
 }
 
-func (c *Controller) GetTelematicsData(ctx context.Context) ([]*model.TelematicsData, error) {
-	telematcsRecords, err := c.db.GetTelematicsData(ctx)
+func (c *Controller) GetTelematicsData(ctx context.Context, req *model.GetTelematicsDataRequest) ([]*model.TelematicsData, error) {
+	telematcsRecords, err := c.db.GetTelematicsData(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	return telematcsRecords, nil
 }
 
-func (c *Controller) GetRecentTelematicsData(ctx context.Context) ([]*model.TelematicsData, error) {
-	telematcsRecords, err := c.db.GetRecentTelematicsData(ctx)
+func (c *Controller) GetRecentTelematicsData(ctx context.Context, req *model.GetTelematicsDataRequest) ([]*model.TelematicsData, error) {
+	telematcsRecords, err := c.db.GetRecentTelematicsData(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	return telematcsRecords, nil
 }
 
-func (c *Controller) GetConnectionsData(ctx context.Context) ([]*model.ConnectionsData, error) {
-	records, err := c.db.GetConnectionEvents(ctx)
+func (c *Controller) GetConnectionsData(ctx context.Context, req *model.GetConnectionsDataRequest) ([]*model.ConnectionsData, error) {
+	records, err := c.db.GetConnectionEvents(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	return records, nil
 }
 
-func (c *Controller) GetRecentConnectionsData(ctx context.Context) ([]*model.ConnectionsData, error) {
-	records, err := c.db.GetRecentConnectionEvents(ctx)
+func (c *Controller) GetRecentConnectionsData(ctx context.Context, req *model.GetConnectionsDataRequest) ([]*model.ConnectionsData, error) {
+	records, err := c.db.GetRecentConnectionEvents(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	return records, nil
 }
 
-func (c *Controller) GetRegisteredDevices(ctx context.Context) ([]*model.RegisteredDevice, error) {
-	records, err := c.db.GetRegisteredDevices(ctx)
+func (c *Controller) GetRegisteredDevices(ctx context.Context, req *model.GetRegisteredDevicesRequest) ([]*model.RegisteredDevice, error) {
+	records, err := c.db.GetRegisteredDevices(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -61,11 +61,7 @@ func (c *Controller) GetRegisteredDevices(ctx context.Context) ([]*model.Registe
 }
 
 func (c *Controller) GetEntitiesData(ctx context.Context) ([]*model.ConnectionsData, error) {
-	records, err := c.db.GetRecentConnectionEvents(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return records, nil
+	return nil, nil
 }
 
 func (c *Controller) GetCommands(ctx context.Context) ([]*model.Command, error) {

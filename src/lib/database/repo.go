@@ -10,11 +10,11 @@ import (
 )
 
 type Repo interface {
-	GetTelematicsData(ctx context.Context) ([]*model.TelematicsData, error)
-	GetRecentTelematicsData(ctx context.Context) ([]*model.TelematicsData, error)
-	GetConnectionEvents(ctx context.Context) ([]*model.ConnectionsData, error)
-	GetRecentConnectionEvents(ctx context.Context) ([]*model.ConnectionsData, error)
-	GetRegisteredDevices(ctx context.Context) ([]*model.RegisteredDevice, error)
+	GetTelematicsData(ctx context.Context, req *model.GetTelematicsDataRequest) ([]*model.TelematicsData, error)
+	GetRecentTelematicsData(ctx context.Context, req *model.GetTelematicsDataRequest) ([]*model.TelematicsData, error)
+	GetConnectionEvents(ctx context.Context, req *model.GetConnectionsDataRequest) ([]*model.ConnectionsData, error)
+	GetRecentConnectionEvents(ctx context.Context, req *model.GetConnectionsDataRequest) ([]*model.ConnectionsData, error)
+	GetRegisteredDevices(ctx context.Context, req *model.GetRegisteredDevicesRequest) ([]*model.RegisteredDevice, error)
 	GetCommands(ctx context.Context) ([]*model.Command, error)
 	GetEntities(ctx context.Context) ([]*model.ConnectionsData, error)
 	Close(ctx context.Context) error
